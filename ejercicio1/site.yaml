@@ -1,0 +1,48 @@
+- hosts: ejercicio1
+  become: true
+  tasks:
+      # Crea un usuario con mi nombre
+    - name: "Crear usuario alejandro"
+      user:
+        name: alejandro
+        comment: alejandro gv
+        password: $6$oqlFk5nYRUpfeuPk$bZCcH.LlHkCSISdqxwOLiVsQSHMGoeJKI6lBFjS1kn07j/S2R7f6BDjMMz5lZyOJntmy6.SaQ23AcZabo0tSM.
+        state: present
+        home: /home/alejandro
+        shell: /bin/bash
+      # Descarga el fichero desde la url https://wordpress.org/latest.zip
+    - name: "Descarga latest.zip"
+      get_url:
+        url: https://wordpress.org/latest.zip
+        dest: /home/alejandro/latest.zip
+      # Actualizar paquetes
+    - name: "Actualización"
+      apt: update_cache=yes upgrade=yes
+      # Descomrpime el paquete
+    - name: "Instala los paquetes necesarios"
+      apt:
+        pkg:
+          - unzip
+          - mariadb-server
+          - python3-mysqldb
+          - git
+    - name: "Descomprime latest.zip"
+      unarchive:
+        remote_src: yes
+        src: /home/alejandro/latest.zip
+        dest: /home/alejandro/
+    - name: "Crear una base de datos"
+      mysql_db:
+        name: alejandro_wordpress
+        state: present
+    - name: "Crear usuario de la bd"
+      mysql_user:
+        name: my_alejandro
+        encrypted: yes
+        password: '*91FE71C2DC1A222A64D7CA439E60F18243EE6DE4'
+        priv: alejandro_wordpress.*:ALL,GRANT
+    - name: "Clonar repositorio github"
+      git:
+        clone: yes
+        repo: 'https://github.com/josedom24/ansible_ejemplos.git'
+        dest: /home/alejandro/ansible_ejemplos

@@ -1,0 +1,21 @@
+- name: configurar bit de forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: yes
+
+- name: Añadir clave ssh
+  authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Cambiar network/interfaces
+  template:
+    src: interfaces
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reinicio
